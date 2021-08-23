@@ -22,8 +22,10 @@ class PrintOut(Enum):
     INFO = 2
     VERBOSE = 3
 
-def copy2_verbose(src, dst, dst_root, printout=False):
-    if printout: print(f'  Copying {src} to {dst_root}')
+def copy2_verbose(src, dst, dst_root, printout):
+    if printout:
+        fwdslash_src = src.replace('\\', '/')   # only for consistency of the output
+        print(f'  Copying {fwdslash_src} to {dst_root}')
     shutil.copy2(src, dst)
 
 def unpak(pak_filename, unpak_dir, printout=False):
@@ -34,49 +36,48 @@ def unpak(pak_filename, unpak_dir, printout=False):
 
 def repak(pak_filename, pak_dir, printout=False):
     with pak.PakFile(pak_filename, 'w') as pak_file:
-        previous_cwd = os.getcwd()
+        old_cwd = os.getcwd()
         os.chdir(pak_dir)
-        current_dir = os.getcwd()
-        for root, dirs, files in os.walk(current_dir):
+        cwd = os.getcwd()
+        for root, dirs, files in os.walk(cwd):
             for name in files:
                 fullpath = os.path.join(root, name)
-                relpath = os.path.relpath(fullpath, current_dir)
-                relpath = relpath.replace('\\', '/')
-                if printout: print(f'  Adding {relpath} to {pak_filename}')
+                relpath = os.path.relpath(fullpath, cwd).replace('\\', '/')
+                if printout: print(f'  Adding {pak_dir}/{relpath} to {pak_filename}')
                 pak_file.write(relpath)
-        os.chdir(previous_cwd)
+        os.chdir(old_cwd)
 
-def consolidate(game_dir, printout=PrintOut.INFO):
-    temp_game_dir = game_dir + '_temp'
-    consolidated_game_dir = game_dir + '_consolidated'
+def consolidate(gamedir, printout=PrintOut.INFO):
+    gamedir_temp = gamedir + '_temp'
+    gamedir_consolidated = gamedir + '_consolidated'
 
-    # Do we print any output or not
+    # Clean up any old files and folders first
+    shutil.rmtree(gamedir_temp, True)
+    shutil.rmtree(gamedir_consolidated, True)
+    os.makedirs(gamedir_temp)
+    os.makedirs(gamedir_consolidated)
+
+    # Determine if we are to print any output and if it is verbose
     printoutVerbose = printout is PrintOut.VERBOSE
     printout = not printout is PrintOut.NONE
 
-    # Clean any old files first
-    shutil.rmtree(temp_game_dir, True)
-    shutil.rmtree(consolidated_game_dir, True)
-    os.makedirs(temp_game_dir)
-    os.makedirs(consolidated_game_dir)
+    for pak_filename in sorted([f for f in os.listdir(gamedir) if f.endswith('.pak')]):
+        pak_relpath = gamedir + '/' + pak_filename
+        if printout: print(f'Unpaking {pak_relpath} to {gamedir_temp}')
+        unpak(pak_relpath, gamedir_temp, printoutVerbose)
 
-    for pak_filename in sorted([f for f in os.listdir(game_dir) if f.endswith('.pak')]):
-        pak_relpath = game_dir + '/' + pak_filename
-        if printout: print(f'Unpaking {pak_relpath} to {temp_game_dir}')
-        unpak(pak_relpath, temp_game_dir, printoutVerbose)
-
-    if printout:print(f'Copying free files from {game_dir} to {temp_game_dir}')
-    shutil.copytree(game_dir, temp_game_dir,
+    if printout:print(f'Copying free files from {gamedir} to {gamedir_temp}')
+    shutil.copytree(gamedir, gamedir_temp,
         ignore=shutil.ignore_patterns('*.pak'),
-        copy_function=lambda src, dst: copy2_verbose(src, dst, temp_game_dir, printoutVerbose),
+        copy_function=lambda src, dst: copy2_verbose(src, dst, gamedir_temp, printoutVerbose),
         dirs_exist_ok=True)
 
-    repak_relpath = consolidated_game_dir + '/pak0.pak'
-    if printout: print(f'Repaking {temp_game_dir} to {repak_relpath}')
-    repak(repak_relpath, temp_game_dir, printoutVerbose)
+    repak_relpath = gamedir_consolidated + '/pak0.pak'
+    if printout: print(f'Repaking {gamedir_temp} to {repak_relpath}')
+    repak(repak_relpath, gamedir_temp, printoutVerbose)
 
-    if printout: print(f'Cleaning up temporary files from {temp_game_dir}')
-    shutil.rmtree(temp_game_dir, True)
+    if printout: print(f'Cleaning up temporary files from {gamedir_temp}')
+    shutil.rmtree(gamedir_temp, True)
 
 if __name__ == '__main__':
     import argparse
