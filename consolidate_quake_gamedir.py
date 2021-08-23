@@ -35,17 +35,15 @@ def unpak(pak_filename, unpak_dir, printout=False):
 def repak(pak_filename, pak_dir, printout=False):
     with pak.PakFile(pak_filename, 'w') as pak_file:
         previous_cwd = os.getcwd()
-
         os.chdir(pak_dir)
         current_dir = os.getcwd()
-        if os.path.isdir(current_dir):
-            for root, dirs, files in os.walk(current_dir):
-                for name in files:
-                    fullpath = os.path.join(root, name)
-                    relpath = os.path.relpath(fullpath, current_dir)
-                    relpath = relpath.replace('\\', '/')
-                    if printout: print(f'  Adding {relpath} to {pak_filename}')
-                    pak_file.write(relpath)
+        for root, dirs, files in os.walk(current_dir):
+            for name in files:
+                fullpath = os.path.join(root, name)
+                relpath = os.path.relpath(fullpath, current_dir)
+                relpath = relpath.replace('\\', '/')
+                if printout: print(f'  Adding {relpath} to {pak_filename}')
+                pak_file.write(relpath)
         os.chdir(previous_cwd)
 
 def consolidate(game_dir, printout=PrintOut.INFO):
