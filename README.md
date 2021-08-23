@@ -35,7 +35,7 @@ Cleaning up temporary files from gamedir_temp
 Install with: `pip install vgio`
 
 ## Simple example
-Run `python -m example.consolidate_hwjam3` from the root folder
+Run `python -m example.consolidate_hwjam3` from the root folder of this project.
 
 This example script will automatically download [Halloween Jam 3](https://www.quaddicted.com/reviews/hwjam3.html),
 extract it to `hwjam3`, and consolidate it to `hwjam3_consolidated/pak0.pak`. This all
