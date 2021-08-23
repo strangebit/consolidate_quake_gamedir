@@ -24,7 +24,7 @@ Example console output:
 Unpaking gamedir/pak0.pak to gamedir_temp
 Unpaking gamedir/pak1.pak to gamedir_temp
 Unpaking gamedir/pak2.pak to gamedir_temp
-Copying free files from gamedir to gamedir_temp
+Copying loose files from gamedir to gamedir_temp
 Repaking gamedir_temp to gamedir_consolidated/pak0.pak
 Cleaning up temporary files from gamedir_temp
 ```

@@ -66,7 +66,7 @@ def consolidate(gamedir, printout=PrintOut.INFO):
         if printout: print(f'Unpaking {pak_relpath} to {gamedir_temp}')
         unpak(pak_relpath, gamedir_temp, printoutVerbose)
 
-    if printout:print(f'Copying free files from {gamedir} to {gamedir_temp}')
+    if printout:print(f'Copying loose files from {gamedir} to {gamedir_temp}')
     shutil.copytree(gamedir, gamedir_temp,
         ignore=shutil.ignore_patterns('*.pak'),
         copy_function=lambda src, dst: copy2_verbose(src, dst, gamedir_temp, printoutVerbose),
